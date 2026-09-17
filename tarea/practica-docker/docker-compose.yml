@@ -1,0 +1,59 @@
+services:
+  # Servidor Frontend (HTML / Nginx)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: frontend_ps5
+    ports:
+      - "80:80"
+    networks:
+      - mi_red
+    depends_on:
+      - backend
+
+  # Servidor Backend (Node.js / Express)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: backend_api
+    ports:
+      - "5000:5000"
+    environment:
+      - DB_HOST=db
+      - POSTGRES_USER=usuario_app
+      - POSTGRES_PASSWORD=password_segura123
+      - POSTGRES_DB=mi_base_datos
+      - PORT=5000
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=llave_por_defecto
+      - AWS_REGION=bolivia
+      - AWS_BUCKET_NAME=hola
+    depends_on:
+      - db
+    networks:
+      - mi_red
+
+  # Base de Datos (PostgreSQL)
+  db:
+    image: postgres:15-alpine
+    container_name: postgres_db
+    restart: always
+    environment:
+      - POSTGRES_USER=usuario_app
+      - POSTGRES_PASSWORD=password_segura123
+      - POSTGRES_DB=mi_base_datos
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - mi_red
+
+volumes:
+  postgres_data:
+
+networks:
+  mi_red:
+    driver: bridge
